@@ -1,0 +1,323 @@
+<html>
+<head>
+<title>Transfer_art.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #a9b7c6;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Transfer_art.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">{ 
+ &quot;cells&quot;: [ 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot;Dataset: https://tev.fbk.eu/technologies/smartwatch-gestures-dataset\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;Research Paper: https://www.eurasip.org/Proceedings/Eusipco/Eusipco2014/HTML/papers/1569922319.pdf&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot; &lt;h2&gt;Import dataset to get started&lt;h2&gt;&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: 1, 
+   &quot;outputs&quot;: [], 
+   &quot;source&quot;: [ 
+    &quot;import pandas as pd\n&quot;, 
+    &quot;df=pd.read_csv('gesture_data.csv')\n&quot;, 
+    &quot;print(\&quot;data read into dataframe'\&quot;)&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%%\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot;&lt;h2&gt;Profile Data&lt;h2&gt;&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: null, 
+   &quot;outputs&quot;: [], 
+   &quot;source&quot;: [ 
+    &quot;one=df[(df['user'] == 0) &amp; (df['gesture'] == 0) &amp; (df['iteration'] == 0)]\n&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%%\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot;&lt;h2&gt;Bring in the Model&lt;br&gt;\n&quot;, 
+    &quot;-modify for the data in question &lt;br&gt;\n&quot;, 
+    &quot;-set pretrained layers to &lt;i&gt;non-trainable&lt;i&gt;&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: 2, 
+   &quot;outputs&quot;: [ 
+    { 
+     &quot;name&quot;: &quot;stdout&quot;, 
+     &quot;output_type&quot;: &quot;stream&quot;, 
+     &quot;text&quot;: [ 
+      &quot;Model: \&quot;sequential\&quot;\n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;Layer (type)                 Output Shape              Param #   \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;resnet50 (Functional)        (None, 2048)              23587712  \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;flatten (Flatten)            (None, 2048)              0         \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense (Dense)                (None, 512)               1049088   \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense_1 (Dense)              (None, 15)                7695      \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;Total params: 24,644,495\n&quot;, 
+      &quot;Trainable params: 1,056,783\n&quot;, 
+      &quot;Non-trainable params: 23,587,712\n&quot;, 
+      &quot;_________________________________________________________________\n&quot; 
+     ] 
+    } 
+   ], 
+   &quot;source&quot;: [ 
+    &quot;import matplotlib.pyplot as plt\n&quot;, 
+    &quot;import numpy as np\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;import tensorflow as tf\n&quot;, 
+    &quot;from tensorflow.keras.layers import Dense, Flatten\n&quot;, 
+    &quot;from tensorflow.keras.models import Sequential\n&quot;, 
+    &quot;from tensorflow.keras.optimizers import Adam\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;data =[0,0]\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;Data_sh = np.shape(data)\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;in_sh = Data_sh[1:]\n&quot;, 
+    &quot;in_sh = (180,180,3)\n&quot;, 
+    &quot;resnet_model = Sequential()\n&quot;, 
+    &quot;pretrained_model= tf.keras.applications.ResNet50(include_top=False,\n&quot;, 
+    &quot;                   input_shape=in_sh,\n&quot;, 
+    &quot;                   pooling='avg',classes=5,\n&quot;, 
+    &quot;                   weights='imagenet')\n&quot;, 
+    &quot;for layer in pretrained_model.layers:\n&quot;, 
+    &quot;        layer.trainable=False\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;resnet_model.add(pretrained_model)\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;resnet_model.add(Flatten())\n&quot;, 
+    &quot;resnet_model.add(Dense(512, activation='relu'))\n&quot;, 
+    &quot;resnet_model.add(Dense(15, activation='softmax'))\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;resnet_model.summary()\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;resnet_model.compile(optimizer=tf.keras.optimizers.Adam(),\n&quot;, 
+    &quot;              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),\n&quot;, 
+    &quot;              metrics=[tf.keras.metrics.BinaryAccuracy()])&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% Import the model and set input and output\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot;&lt;h2&gt;Train model on sub set&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: 4, 
+   &quot;outputs&quot;: [], 
+   &quot;source&quot;: [ 
+    &quot;#model.fit(new_dataset, epochs=20, callbacks=..., validation_data=...)&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%%\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;markdown&quot;, 
+   &quot;source&quot;: [ 
+    &quot;&lt;h2&gt;Display pop of final softmax layer and replacement with new one to be trained&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%% md\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: 6, 
+   &quot;outputs&quot;: [ 
+    { 
+     &quot;name&quot;: &quot;stdout&quot;, 
+     &quot;output_type&quot;: &quot;stream&quot;, 
+     &quot;text&quot;: [ 
+      &quot;Model: \&quot;model_1\&quot;\n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;Layer (type)                 Output Shape              Param #   \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;resnet50_input (InputLayer)  [(None, 180, 180, 3)]     0         \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;resnet50 (Functional)        (None, 2048)              23587712  \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;flatten (Flatten)            (None, 2048)              0         \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense (Dense)                (None, 512)               1049088   \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense_3 (Dense)              (None, 20)                10260     \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;Total params: 24,647,060\n&quot;, 
+      &quot;Trainable params: 1,059,348\n&quot;, 
+      &quot;Non-trainable params: 23,587,712\n&quot;, 
+      &quot;_________________________________________________________________\n&quot; 
+     ] 
+    } 
+   ], 
+   &quot;source&quot;: [ 
+    &quot;from tensorflow.keras.models import Model\n&quot;, 
+    &quot;resnet_model.pop()\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;resnet_model.add(Dense(20, activation='softmax'))\n&quot;, 
+    &quot;model2 = Model(resnet_model.input, resnet_model.layers[-1].output)\n&quot;, 
+    &quot;#model2.add(Dense(20, activation='softmax'))\n&quot;, 
+    &quot;model2.summary()\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;model2.compile(optimizer=tf.keras.optimizers.Adam(),\n&quot;, 
+    &quot;              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),\n&quot;, 
+    &quot;              metrics=[tf.keras.metrics.BinaryAccuracy()])\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;#model.fit(new_dataset, epochs=20, callbacks=..., validation_data=...)&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%%\n&quot; 
+    } 
+   } 
+  }, 
+  { 
+   &quot;cell_type&quot;: &quot;code&quot;, 
+   &quot;execution_count&quot;: 7, 
+   &quot;outputs&quot;: [ 
+    { 
+     &quot;name&quot;: &quot;stdout&quot;, 
+     &quot;output_type&quot;: &quot;stream&quot;, 
+     &quot;text&quot;: [ 
+      &quot;Model: \&quot;model_1\&quot;\n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;Layer (type)                 Output Shape              Param #   \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;resnet50_input (InputLayer)  [(None, 180, 180, 3)]     0         \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;resnet50 (Functional)        (None, 2048)              23587712  \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;flatten (Flatten)            (None, 2048)              0         \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense (Dense)                (None, 512)               1049088   \n&quot;, 
+      &quot;_________________________________________________________________\n&quot;, 
+      &quot;dense_3 (Dense)              (None, 20)                10260     \n&quot;, 
+      &quot;=================================================================\n&quot;, 
+      &quot;Total params: 24,647,060\n&quot;, 
+      &quot;Trainable params: 24,593,940\n&quot;, 
+      &quot;Non-trainable params: 53,120\n&quot;, 
+      &quot;_________________________________________________________________\n&quot; 
+     ] 
+    } 
+   ], 
+   &quot;source&quot;: [ 
+    &quot;model2.trainable = True\n&quot;, 
+    &quot;\n&quot;, 
+    &quot;#model.fit(new_dataset, epochs=20, callbacks=..., validation_data=...)\n&quot;, 
+    &quot;model2.summary()&quot; 
+   ], 
+   &quot;metadata&quot;: { 
+    &quot;collapsed&quot;: false, 
+    &quot;pycharm&quot;: { 
+     &quot;name&quot;: &quot;#%%\n&quot; 
+    } 
+   } 
+  } 
+ ], 
+ &quot;metadata&quot;: { 
+  &quot;kernelspec&quot;: { 
+   &quot;name&quot;: &quot;python3&quot;, 
+   &quot;language&quot;: &quot;python&quot;, 
+   &quot;display_name&quot;: &quot;Python 3&quot; 
+  }, 
+  &quot;language_info&quot;: { 
+   &quot;codemirror_mode&quot;: { 
+    &quot;name&quot;: &quot;ipython&quot;, 
+    &quot;version&quot;: 2 
+   }, 
+   &quot;file_extension&quot;: &quot;.py&quot;, 
+   &quot;mimetype&quot;: &quot;text/x-python&quot;, 
+   &quot;name&quot;: &quot;python&quot;, 
+   &quot;nbconvert_exporter&quot;: &quot;python&quot;, 
+   &quot;pygments_lexer&quot;: &quot;ipython2&quot;, 
+   &quot;version&quot;: &quot;2.7.6&quot; 
+  } 
+ }, 
+ &quot;nbformat&quot;: 4, 
+ &quot;nbformat_minor&quot;: 0 
+}</span></pre>
+</body>
+</html>
