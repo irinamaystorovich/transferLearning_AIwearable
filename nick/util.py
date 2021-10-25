@@ -499,3 +499,5 @@ def make_confusion_matrix(cf,
 
     if title:
         plt.title(title)
+
+    plt.show()
