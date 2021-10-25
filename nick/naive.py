@@ -1,5 +1,5 @@
 import tensorflow
-import sklearn
+from sklearn.metrics import confusion_matrix
 import numpy
 import matplotlib.pyplot as plt
 
@@ -36,7 +36,8 @@ def main():
                                          data_length=19 )
     lstm_naive_model.fit( X_train, y_train, epochs=250 )
 
-    
+    score = lstm_naive_model.evaluate( X_test, y_test )
+    print( "test loss, test acc: ", score )
 
 if __name__ == "__main__":
     main()
