@@ -49,6 +49,15 @@ def train_test_split( data, test_subjects=None, test_gestures=None ):
     X_test = np.array( [ np.array( test[ col ].tolist() ).T for col in [ 'x', 'y', 'z' ] ] ).T
     y_test = np.array( test[ 'gesture' ].tolist() )
 
+    # Shuffle the data.
+    train_perm = np.random.permutation( X_train.shape[ 0 ] )
+    X_train = X_train[ train_perm ]
+    y_train = y_train[ train_perm ]
+
+    test_perm = np.random.permutation( X_test.shape[ 0 ] )
+    X_test = X_test[ test_perm ]
+    y_test = y_test[ test_perm ]
+
     print( f"{X_train.shape}, {y_train.shape}\n{X_test.shape}, {y_test.shape}" )
 
     return X_train, y_train, X_test, y_test
