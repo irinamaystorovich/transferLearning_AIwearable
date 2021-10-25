@@ -8,7 +8,10 @@ from ast import literal_eval
 from sklearn.preprocessing import StandardScaler
 
 
-def train_test_split( data, test_subjects=None, test_gestures=None ):
+def train_test_split( data, train_subjects=None,
+                      test_subjects=None,
+                      val_subjects=None,
+                      sel_gestures=None ):
     """
     Split the given dataframe into test and train data and labels. Data is
     of shape (length, 3) where length is the number of samples in a gesture
@@ -23,20 +26,28 @@ def train_test_split( data, test_subjects=None, test_gestures=None ):
     :param test_gestures: List of gesture indexes over [0, 19] to select for
     test data. Only used if test_subjects is None.
 
-    :return: Training data, training labels, testing data, testing labels.
+    :return: Training data, training labels, testing data, testing labels,
+    validation data, validation labels.
     """
 
-    if test_gestures is None and test_subjects is None:
-        raise ValueError( "Test subjects must be provided if train ratio is None." )
+    if train_subjects is None or test_subjects is None:
+        raise ValueError( "Must provide train and test subjects list." )
 
-    column, select_vals = ('user', test_subjects) if test_subjects is not None \
-        else ('gesture', test_gestures)
+    # TODO: Select sub-set of gestures if provided.
+
+
+    # Define the column we're selecting by.
+    # Not useful now, maybe in future updates for more dynamic splitting.
+    sel_column = 'user'
+
+    val_subjects = [] if val_subjects is None else val_subjects
 
 
     # Split into train and test rows by selecting rows where slected column data
     # is in the provided splitting list (user or gesture).
-    test = data[ data[ column ].isin( select_vals ) ]
-    train = data[ ~data[ column ].isin( select_vals ) ]
+    test = data[ data[ sel_column ].isin( test_subjects ) ]
+    train = data[ ~data[ sel_column ].isin( train_subjects ) &
+                  ~data[ sel_column ].isin( val_subjects ) ]
 
 
     # Transpose the data so that the shape is
@@ -58,9 +69,22 @@ def train_test_split( data, test_subjects=None, test_gestures=None ):
     X_test = X_test[ test_perm ]
     y_test = y_test[ test_perm ]
 
-    print( f"{X_train.shape}, {y_train.shape}\n{X_test.shape}, {y_test.shape}" )
+    if val_subjects is not None:
+        val = data[ data[ sel_column ].isin( val_subjects ) ]
+        X_val = np.array( [ np.array( val[ col ].tolist() ).T for col in [ 'x', 'y', 'z' ] ] ).T
+        y_val = np.array( val[ 'gesture' ].tolist() )
 
-    return X_train, y_train, X_test, y_test
+        val_perm = np.random.permutation( X_val.shape[ 0 ] )
+        X_val = X_val[ val_perm ]
+        y_val = y_val[ val_perm ]
+    else:
+        X_val = None
+        y_val = None
+
+    print( f"{X_train.shape}, {y_train.shape}\n{X_test.shape}, {y_test.shape}\n"
+           f"{X_val.shape}, {y_val.shape}")
+
+    return X_train, y_train, X_test, y_test, X_val, y_val
 
 
 def get_gesture_data( path, data_column_headers=None ):
