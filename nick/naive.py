@@ -9,6 +9,8 @@ from util import process_data
 from util import get_gesture_data
 from util import truncate_data
 from util import train_test_split
+from util import print_results_table
+from util import save_results
 
 from models import create_lstm_model
 
@@ -16,8 +18,8 @@ from models import create_lstm_model
 def main():
     # Define simulation parameters.
     data_length = 26        # Length to truncate/pad samples to.
-    epochs = 10             # Length of training.
-    num_iterations = 10     # Number of iterations of fit/test.
+    epochs = 80             # Length of training.
+    num_iterations = 50     # Number of iterations of fit/test.
     user_selections = []    # List to hold tuple of user splits (train/test/val)
 
     # Define naive model parameters.
@@ -29,6 +31,7 @@ def main():
 
     cf_matrix_true = np.array( [] )
     cf_matrix_pred = np.array( [] )
+    scores = []
 
     for i in range( num_iterations ):
         # Select the training, test, and validation subjects.
@@ -36,17 +39,17 @@ def main():
         subject_list = np.random.permutation( 8 )
 
         # Select the second from last as validation and last user as test.
-        train_subjects = [ subject_list[ :-2 ] ]
-        test_subjects = [ subject_list[ -2 ] ]
+        train_subjects = subject_list[ :-2 ].tolist()
+        test_subjects = subject_list[ -2:-1 ].tolist()
         val_subjects = [ subject_list[ -1 ] ]
 
-        user_selections.append( ( train_subjects, test_subjects, val_subjects ) )
+        user_selections.append( ( train_subjects, val_subjects, test_subjects ) )
 
         print( f"============================================================\n"
                f"Iteration {i+1}:\n"
                f"    Train Subjects:      {user_selections[ i ][ 0 ]}\n"
-               f"    Test Subjects:       {user_selections[ i ][ 1 ]}\n"
-               f"    Validation Subjects: {user_selections[ i ][ 2 ]}\n" )
+               f"    Validation Subjects: {user_selections[ i ][ 1 ]}\n"
+               f"    Test Subjects:       {user_selections[ i ][ 2 ]}\n" )
 
         # Split the data into training, testing, and validation data and labels.
         X_train, y_train, \
@@ -70,6 +73,7 @@ def main():
 
         # Test the model to see how well we did.
         score = lstm_naive_model.evaluate( X_test, y_test )
+        scores.append( score )
 
         # Generate data for confusion matrix.
         cf_matrix_true = np.hstack( ( cf_matrix_true, y_test ) )
@@ -81,6 +85,19 @@ def main():
     # Generate the confusion matrix.
     # cf_matrix = confusion_matrix( y_test, np.argmax( lstm_naive_model.predict( X_test ), axis=1 ) )
     cf_matrix = confusion_matrix( cf_matrix_true, cf_matrix_pred )
+
+
+    # Print the results for each simulation run in a tabular format.
+    print_results_table( scores, user_selections, cf_matrix )
+
+
+    # Save results.
+    save_results( scores, user_selections, cf_matrix, epochs,
+                  filename=f'results_{epochs}-epochs_{num_iterations}-iterations', 
+                  loc='./results/', filetype=0 )
+
+
+    # Plot the confusion matrix.
     make_confusion_matrix( cf_matrix, categories=[ '01', '02', '03', '04', '05',
                                                    '06', '07', '08', '09', '10',
                                                    '11', '12', '13', '14', '15',
